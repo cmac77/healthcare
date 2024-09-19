@@ -1,0 +1,4 @@
+# pyproject.toml
+
+[tool.black]
+line-length = 79  # Set line length to 79 characters, following PEP 8
