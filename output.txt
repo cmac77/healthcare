@@ -1,0 +1,161 @@
+import tkinter as tk
+from tkinter import StringVar
+
+
+def reorder_listbox(listbox, direction):
+    """Reorder selected item in a listbox."""
+    selected = listbox.curselection()
+    if not selected:
+        return
+    index = selected[0]
+
+    # Move up
+    if direction == "up" and index > 0:
+        value = listbox.get(index)
+        listbox.delete(index)
+        listbox.insert(index - 1, value)
+        listbox.selection_set(index - 1)
+
+    # Move down
+    elif direction == "down" and index < listbox.size() - 1:
+        value = listbox.get(index)
+        listbox.delete(index)
+        listbox.insert(index + 1, value)
+        listbox.selection_set(index + 1)
+
+
+def prompt_user_for_recode(column_name, unique_values):
+    """
+    Create a UI to prompt the user for recoding options and ordering for each column.
+    Returns the ordered values and whether the column should be recoded as ordinal.
+    """
+
+    def print_geometry_after_rendering():
+        print(
+            root.winfo_geometry()
+        )  # This will print the correct window geometry after it is rendered
+
+    root = tk.Tk()
+    root.title(f"Recode and Order Column")
+
+    # Get screen dimensions for dynamic sizing
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # Dynamically calculate base height as a percentage of screen height (e.g., 60%)
+    base_height = int(
+        screen_height * 0.10
+    )  # 10% of the screen height for base UI
+    # base_height = 0
+    listbox_height = len(unique_values) * 25  # Estimate 25px per listbox item
+    total_height = (
+        base_height + listbox_height + 100
+    )  # Total window height with padding
+
+    # Set window width to a percentage of the screen width (e.g., 40%)
+    window_width = int(screen_width * 0.25)  # 40% of the screen width
+
+    # Apply the dynamic window size
+    root.geometry(f"{window_width}x{total_height}+50+50")
+
+    # Schedule geometry printing after the window has been fully rendered
+    root.after(
+        100, print_geometry_after_rendering
+    )  # Wait 100ms to ensure window is rendered
+
+    # Force window to the front
+    root.lift()
+    root.attributes("-topmost", True)
+
+    # Layout for Yes/No and Confirm buttons
+    top_frame = tk.Frame(root)
+    top_frame.pack(pady=10)
+
+    # Label with text wrapping for long column names
+    label_text = (
+        f"Do you want to recode '{column_name}' as an ordinal variable?"
+    )
+    label = tk.Label(
+        top_frame,
+        text=label_text,
+        wraplength=window_width - 100,  # Wrap text based on dynamic width
+        justify="left",
+    )
+    label.grid(row=0, column=0, columnspan=2)
+
+    # Stack Yes/No vertically
+    recode_var = StringVar(value="no")  # Default to "No"
+    yes_button = tk.Radiobutton(
+        top_frame, text="Yes", variable=recode_var, value="yes", width=10
+    )
+    no_button = tk.Radiobutton(
+        top_frame, text="No", variable=recode_var, value="no", width=10
+    )
+    yes_button.grid(row=1, column=0, pady=5)
+    no_button.grid(row=2, column=0, pady=5)
+
+    # Place Confirm button to the right, centered between Yes/No
+    confirm_button = tk.Button(
+        top_frame, text="Confirm", command=lambda: root.quit(), width=10
+    )
+    confirm_button.grid(row=1, column=1, rowspan=2, padx=20, pady=10)
+
+    # Label for reorder instructions
+    tk.Label(
+        root, text="Reorder the unique values (top is smallest ordinal):"
+    ).pack(pady=10)
+
+    # Create listbox for unique values
+    listbox = tk.Listbox(root, selectmode=tk.SINGLE)
+    for val in unique_values:
+        listbox.insert(tk.END, str(val))
+    listbox.pack(expand=True, fill="both", padx=10, pady=10)
+
+    # Add reorder buttons at the bottom
+    button_frame = tk.Frame(root)
+    button_frame.pack(pady=10)
+    tk.Button(
+        button_frame,
+        text="Move Up",
+        command=lambda: reorder_listbox(listbox, "up"),
+    ).grid(row=0, column=0, padx=5)
+    tk.Button(
+        button_frame,
+        text="Move Down",
+        command=lambda: reorder_listbox(listbox, "down"),
+    ).grid(row=0, column=1, padx=5)
+
+    # Start the tkinter event loop
+    root.mainloop()
+
+    # # Insert a breakpoint here for debugging
+    # import pdb
+
+    # pdb.set_trace()
+
+    # Retrieve the order before the window is destroyed
+    ordered_values = [listbox.get(i) for i in range(listbox.size())]
+
+    # Now it's safe to destroy the window after we're done
+    root.destroy()
+
+    # Return user selection and ordering
+    return ordered_values, recode_var.get()
+
+
+# Function to write the contents of 'ordinal_ui.py' to 'output.txt'
+def write_ordinal_ui_to_txt():
+    # Open the original Python file in read mode
+    with open(
+        __file__, "r"
+    ) as source_file:  # __file__ refers to the current file (ordinal_ui.py)
+        # Read the content of the .py file
+        content = source_file.read()
+
+    # Write the content to a .txt file
+    with open("output.txt", "w") as output_file:
+        output_file.write(content)
+
+
+# Call the function to create the text file when the script is executed
+write_ordinal_ui_to_txt()

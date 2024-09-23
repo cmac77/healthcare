@@ -1,5 +1,18 @@
 import tkinter as tk
 from tkinter import StringVar
+import sys
+from pathlib import Path
+
+# Adjust the Python path so it includes the directory where 'export_py2txt.py' is located
+sys.path.append(str(Path(__file__).resolve().parent))
+
+from export_py2txt import write_current_file_to_txt
+
+# Call the function to write the current script to a .txt file
+write_current_file_to_txt(__file__)
+
+import tkinter as tk
+from tkinter import StringVar
 
 
 def reorder_listbox(listbox, direction):
@@ -25,28 +38,21 @@ def reorder_listbox(listbox, direction):
 
 
 def prompt_user_for_recode(column_name, unique_values):
-    """
-    Create a UI to prompt the user for recoding options and ordering for each column.
-    Returns the ordered values and whether the column should be recoded as ordinal.
-    """
     root = tk.Tk()
     root.title(f"Recode and Order Column")
 
-    # Get screen height for dynamic base height calculation
+    # Get screen dimensions for dynamic sizing
+    screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
-    # Dynamically calculate base height as a percentage of screen height (e.g., 60%)
-    base_height = int(
-        screen_height * 0.6
-    )  # 60% of the screen height for base UI
-    listbox_height = len(unique_values) * 25  # Estimate 25px per listbox item
-    total_height = (
-        base_height + listbox_height + 100
-    )  # Total window height with padding
+    # Fixed window dimensions
+    window_height = int(screen_height * 0.5)  # 30% of the screen height
+    window_width = int(
+        screen_width * 0.5
+    )  # 20% of the screen height (as requested)
 
-    # Set minimum and maximum window width
-    window_width = 720  # 20% wider than the original 600px
-    root.geometry(f"{window_width}x{total_height}+100+100")
+    # Apply fixed window size
+    root.geometry(f"{window_width}x{window_height}+50+50")
 
     # Force window to the front
     root.lift()
@@ -56,47 +62,60 @@ def prompt_user_for_recode(column_name, unique_values):
     top_frame = tk.Frame(root)
     top_frame.pack(pady=10)
 
-    # Label with text wrapping for long column names
+    # Label with text wrapping
     label_text = (
         f"Do you want to recode '{column_name}' as an ordinal variable?"
     )
     label = tk.Label(
         top_frame,
         text=label_text,
-        wraplength=window_width - 100,
+        wraplength=window_width - 50,
         justify="left",
     )
     label.grid(row=0, column=0, columnspan=2)
 
-    # Stack Yes/No vertically
-    recode_var = StringVar(value="no")  # Default to "No"
+    # Stack Yes/No buttons
+    recode_var = StringVar(value="no")
     yes_button = tk.Radiobutton(
-        top_frame, text="Yes", variable=recode_var, value="yes", width=10
+        top_frame, text="Yes", variable=recode_var, value="yes"
     )
     no_button = tk.Radiobutton(
-        top_frame, text="No", variable=recode_var, value="no", width=10
+        top_frame, text="No", variable=recode_var, value="no"
     )
     yes_button.grid(row=1, column=0, pady=5)
     no_button.grid(row=2, column=0, pady=5)
 
-    # Place Confirm button to the right, centered between Yes/No
+    # Confirm button
     confirm_button = tk.Button(
-        top_frame, text="Confirm", command=lambda: root.quit(), width=10
+        top_frame, text="Confirm", command=lambda: root.quit()
     )
     confirm_button.grid(row=1, column=1, rowspan=2, padx=20, pady=10)
 
-    # Label for reorder instructions
+    # Label for listbox
     tk.Label(
         root, text="Reorder the unique values (top is smallest ordinal):"
     ).pack(pady=10)
 
-    # Create listbox for unique values
-    listbox = tk.Listbox(root, selectmode=tk.SINGLE)
+    # Create listbox for unique values with a fixed height of 10 items and scrollbar
+    listbox_frame = tk.Frame(root)
+    listbox_frame.pack(fill="both", expand=True)
+
+    scrollbar = tk.Scrollbar(listbox_frame)
+    scrollbar.pack(side="right", fill="y")
+
+    listbox = tk.Listbox(
+        listbox_frame,
+        selectmode=tk.SINGLE,
+        height=10,
+        yscrollcommand=scrollbar.set,
+    )  # Fixed height of 10 items
     for val in unique_values:
         listbox.insert(tk.END, str(val))
-    listbox.pack(expand=True, fill="both", padx=10, pady=10)
+    listbox.pack(side="left", fill="both", expand=True)
 
-    # Add reorder buttons at the bottom
+    scrollbar.config(command=listbox.yview)
+
+    # Bottom buttons (Move Up / Move Down)
     button_frame = tk.Frame(root)
     button_frame.pack(pady=10)
     tk.Button(
@@ -115,8 +134,6 @@ def prompt_user_for_recode(column_name, unique_values):
 
     # Retrieve the order before the window is destroyed
     ordered_values = [listbox.get(i) for i in range(listbox.size())]
-
-    # Now it's safe to destroy the window after we're done
     root.destroy()
 
     # Return user selection and ordering
