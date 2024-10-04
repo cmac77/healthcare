@@ -1,3 +1,36 @@
+"""
+data_frame_column_editor.py
+
+This module provides a graphical user interface (GUI) for editing columns in a Pandas DataFrame using Tkinter. 
+The `DataFrameColumnEditor` class allows users to:
+- View and edit column names and unique values within each column.
+- Navigate through columns and apply recoding (e.g., ordinal recoding).
+- Track and confirm changes to the DataFrame structure.
+
+The module also includes a utility function `create_random_df` to generate random DataFrames with mixed column types (numerical, string, and mixed data).
+
+Main Classes and Functions:
+- DataFrameColumnEditor: Provides an interactive UI for editing a DataFrame's column names and values.
+- create_random_df: Generates a random DataFrame for testing purposes, with a mix of numerical and categorical columns.
+
+Example Usage:
+--------------
+```python
+import pandas as pd
+from data_frame_column_editor import DataFrameColumnEditor, create_random_df
+
+# Create a sample DataFrame with 10 rows and 5 columns
+df = create_random_df(num_rows=10, num_cols=5)
+
+# Launch the DataFrameColumnEditor UI to edit the DataFrame
+editor = DataFrameColumnEditor(df)
+edited_df = editor.get_edited_df()
+
+# View the updated DataFrame after editing
+print("Edited DataFrame:")
+print(edited_df)
+"""
+
 import tkinter as tk
 import pandas as pd
 import numpy as np
@@ -667,8 +700,3 @@ def create_random_df(num_rows, num_cols):
             )
     df = pd.DataFrame(data)
     return df
-
-
-# # Example usage
-# df = create_random_df(10, 5)  # Create DataFrame with 10 rows and 5 columns
-# DataFrameColumnEditor(df)  # Launch UI

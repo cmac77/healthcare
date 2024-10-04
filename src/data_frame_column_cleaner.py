@@ -1,3 +1,35 @@
+"""
+data_frame_column_cleaner.py
+
+This module provides a utility class for cleaning Pandas DataFrame columns by removing commas from numeric values, stripping whitespace, and converting values to numeric types. The `DataFrameColumnCleaner` class allows users to apply these operations with customizable settings at the column or global level.
+
+Main Class:
+- DataFrameColumnCleaner: A class to clean columns by removing commas, stripping whitespace, and converting values to numeric types.
+
+Example Usage:
+--------------
+```python
+import pandas as pd
+from data_frame_column_cleaner import DataFrameColumnCleaner
+
+# Sample DataFrame with mixed data types and formatting issues
+data = {
+    "Column1": [" 1,000 ", " 2,500 ", "3,000", "invalid"],
+    "Column2": [" 4.5", " 5.75", "6.25", " 7.0 "],
+    "Column3": ["apple", "banana", "cherry", "apple"],
+}
+df = pd.DataFrame(data)
+
+# Initialize the DataFrameColumnCleaner
+cleaner = DataFrameColumnCleaner(strip_whitespace=True, to_numeric_errors="coerce")
+
+# Process the DataFrame with global defaults
+cleaned_df = cleaner.process_dataframe(df)
+
+# View the cleaned DataFrame
+print(cleaned_df)
+"""
+
 import pandas as pd
 
 

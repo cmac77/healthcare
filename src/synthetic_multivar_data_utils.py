@@ -1,3 +1,90 @@
+"""
+synthetic_multivar_data_utils.py
+
+This module provides utilities for generating synthetic multivariate datasets 
+with both numerical and categorical features. It also supports the creation 
+of interaction features between these variables, including multiplicative, 
+additive, and non-linear interactions. These utilities are designed to aid 
+in simulating complex datasets for machine learning and feature engineering 
+purposes.
+
+Main Classes:
+- NumericalInfo: Holds configuration for generating numerical features.
+- CategoricalInfo: Holds configuration for generating categorical features.
+- InteractionInfo: Specifies how to create interaction features between variables.
+- TargetCorrelationInfo: Defines how features are correlated with the target variable.
+
+Main Functions:
+- test_import(): A simple function to test if the module was imported successfully.
+- add_numerical_features(): Adds numerical features based on predefined clusters and distributions.
+- add_categorical_features(): Adds categorical features, optionally applying one-hot encoding and target correlations.
+- add_interaction_features(): Adds interaction terms between features, including numerical, categorical, and mixed features.
+
+Utility Functions:
+- ensure_list(): Ensures that parameters can be treated as lists.
+- apply_specific_correlation(), apply_general_correlation(), apply_categorical_correlation(): Functions for applying correlations between features and the target.
+- generate_cluster_points(): Generates data points around cluster centers using the specified distribution.
+
+Usage Example:
+--------------
+import synthetic_multivar_data_utils as smdu
+
+# Define numerical feature generation configuration
+numerical_info = smdu.NumericalInfo(
+    n_targets=3,
+    n_features=5,
+    n_clusters_per_target=2,
+    cluster_dist="normal",
+    between_target_sep=3.0,
+    within_target_sep=1.0,
+    cluster_spread=1.0,
+    mean=0,
+    std_dev=1
+)
+
+# Generate synthetic numerical data
+df_numerical, target_labels, target_centroids, cluster_centroids = smdu.add_numerical_features(
+    df=None,
+    numerical_info=numerical_info,
+    n_samples=100,
+    target_label=None,
+    is_target_correlated=False
+)
+
+# Define categorical feature generation configuration
+categorical_info = smdu.CategoricalInfo(
+    n_categorical=3,
+    categories_per_variable=[4, 3, 5],
+    one_hot_encode=True
+)
+
+# Add categorical features to the numerical dataset
+df_combined = smdu.add_categorical_features(
+    categorical_info=categorical_info,
+    df=df_numerical,
+    target_label=None,
+    is_target_correlated=False
+)
+
+# Define interaction terms between features
+interaction_info_list = [
+    smdu.InteractionInfo(features=("Num_0", "Num_1"), interaction_type="multiplicative"),
+    smdu.InteractionInfo(features=("Num_2", "Num_3"), interaction_type="additive"),
+    smdu.InteractionInfo(features=("Num_1", "Cat_2_0"), interaction_type="non-linear")
+]
+
+# Add interaction features to the dataset
+df_full = smdu.add_interaction_features(
+    df=df_combined,
+    interaction_info_list=interaction_info_list,
+    target_label=None,
+    is_target_correlated=False
+)
+
+print("Synthetic data generated:")
+print(df_full.head())
+"""
+
 from dataclasses import dataclass
 from typing import Union, List, Optional
 import numpy as np
@@ -19,10 +106,10 @@ class NumericalInfo:
         "normal"  # Distribution type: "normal", "uniform", "lognormal"
     )
     between_target_sep: float = (
-        3.0  # Separation between target centroids (in standard deviations)
+        3.0  # Minimum separation between target centroids (in standard deviations)
     )
     within_target_sep: float = (
-        1.0  # Separation between clusters within each target
+        1.0  # Minimum separation between clusters within each target
     )
     cluster_spread: float = (
         1.0  # Spread for generating data points around cluster centers
@@ -182,7 +269,8 @@ def generate_cluster_points(
     if dist_info.cluster_dist == "normal":
         data_points = np.random.normal(
             loc=dist_info.mean,
-            scale=dist_info.std_dev,
+            scale=dist_info.std_dev
+            * dist_info.cluster_spread,  # Apply cluster spread here
             size=(n_samples, n_features),
         )
     elif dist_info.cluster_dist == "uniform":
@@ -194,7 +282,8 @@ def generate_cluster_points(
     elif dist_info.cluster_dist == "lognormal":
         data_points = np.random.lognormal(
             mean=dist_info.mean,
-            sigma=dist_info.std_dev,
+            sigma=dist_info.std_dev
+            * dist_info.cluster_spread,  # Apply cluster spread here
             size=(n_samples, n_features),
         )
     else:
@@ -207,7 +296,7 @@ def generate_cluster_points(
     return data_points
 
 
-# Main function to generate numerical features
+# Main function to generate numerical features, target labels, and centroids
 def add_numerical_features(
     df: Optional[pd.DataFrame],
     numerical_info: NumericalInfo,
@@ -239,6 +328,8 @@ def add_numerical_features(
 
     # Generate the centroids for the targets
     target_centroids = []
+    cluster_centroids = []  # Store all cluster centroids
+
     for target_idx in range(numerical_info.n_targets):
         while True:
             new_centroid = np.random.normal(
@@ -256,20 +347,43 @@ def add_numerical_features(
 
     target_centroids = np.stack(target_centroids)
 
-    # Generate data points around the target centroids
+    # Initialize an array to hold the target labels
+    target_labels = np.zeros(n_samples, dtype=int)
+
+    # Correct the sample allocation to ensure the right shape
+    total_clusters = sum(n_clusters_per_target)
+    samples_per_cluster = n_samples // total_clusters
+    remaining_samples = n_samples % total_clusters
+
     cluster_idx = 0
+    sample_idx = 0  # To keep track of the row indices for samples
     for target_idx, centroid in enumerate(target_centroids):
         num_clusters = n_clusters_per_target[target_idx]
-        for _ in range(num_clusters):
-            cluster_center = np.random.normal(
-                centroid,
-                numerical_info.within_target_sep,
-                size=(numerical_info.n_features,),
-            )
-            samples = n_samples // sum(
-                n_clusters_per_target
-            )  # Uniformly distribute samples across clusters
+        cluster_centers = []  # Store cluster centers within each target
 
+        for _ in range(num_clusters):
+            # Generate a cluster center within the target centroid with sufficient separation
+            while True:
+                cluster_center = np.random.normal(
+                    centroid,
+                    numerical_info.within_target_sep,
+                    size=(numerical_info.n_features,),
+                )
+                if len(cluster_centers) == 0 or is_far_enough(
+                    cluster_center,
+                    cluster_centers,
+                    numerical_info.within_target_sep,
+                ):
+                    cluster_centers.append(cluster_center)
+                    cluster_centroids.append(cluster_center)
+                    break
+
+            # Handle the remaining samples allocation
+            samples = samples_per_cluster + (1 if remaining_samples > 0 else 0)
+            if remaining_samples > 0:
+                remaining_samples -= 1
+
+            # Generate the correct number of data points around the cluster center
             data_points = generate_cluster_points(
                 samples,
                 numerical_info.n_features,
@@ -296,13 +410,30 @@ def add_numerical_features(
                             data_points, target_label, corr_info
                         )
 
-            # Add generated points to the DataFrame
-            for i in range(numerical_info.n_features):
-                df[f"Num_{i + cluster_idx}"] = data_points[:, i]
+            # Convert data_points to DataFrame and assign column names
+            cluster_df = pd.DataFrame(
+                data_points,
+                columns=[f"Num_{i}" for i in range(numerical_info.n_features)],
+            )
 
+            # If this is the first cluster, initialize the DataFrame
+            if df.empty:
+                df = cluster_df
+            else:
+                # Align the columns before concatenation
+                cluster_df = cluster_df.reindex(
+                    columns=df.columns, fill_value=np.nan
+                )
+                df = pd.concat([df, cluster_df], ignore_index=True)
+
+            # Assign target labels for these samples
+            target_labels[sample_idx : sample_idx + samples] = target_idx
+
+            # Increment sample and cluster index counters
+            sample_idx += samples
             cluster_idx += 1
 
-    return df
+    return df, target_labels, target_centroids, cluster_centroids
 
 
 # Main function to add categorical features
@@ -399,7 +530,6 @@ def concatenate_category_numerical(categorical_feature, numerical_feature):
     """
     Concatenate categorical labels and numerical values to create a new mixed interaction feature.
 
-    Parameters:
     ----------
     categorical_feature : pd.Series
         Categorical feature (e.g., product type).

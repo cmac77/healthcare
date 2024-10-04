@@ -1,3 +1,44 @@
+"""
+diabetes_analysis_pipeline.py
+
+This module provides a complete data pipeline for cleaning, processing, and modeling a healthcare dataset, including training a neural network using PyTorch and evaluating its performance. The pipeline covers data preprocessing, feature engineering, dimensionality reduction with PCA, and training a neural network to predict hospital readmission.
+
+The pipeline consists of the following major steps:
+1. **Data Loading and Cleaning**: Loading CSV files, applying cleaning rules (e.g., whitespace removal, numeric conversion), and saving/loading the cleaned DataFrame using pickle.
+2. **Feature Engineering**: Mapping categorical columns, converting numerical columns to categorical, handling missing values, and generating one-hot encodings for categorical variables.
+3. **Dimensionality Reduction**: Applying PCA using PyTorch and visualizing the transformed data.
+4. **Train-Test Split**: Splitting the data into training and test sets.
+5. **Modeling**: Training a neural network in PyTorch with GPU acceleration, using weighted loss to account for class imbalance.
+6. **Evaluation**: Testing the model's performance and calculating the accuracy on the test set.
+
+Main Components:
+----------------
+- **DataFrameColumnCleaner**: Cleans a Pandas DataFrame by removing commas, stripping whitespace, and converting values to numeric types.
+- **DataFrameColumnEditor**: Launches a Tkinter UI to allow manual edits to the DataFrame.
+- **PCA**: Applies dimensionality reduction using PCA, with the option to accelerate using PyTorch.
+- **SimpleNN**: Defines a simple neural network for classifying hospital readmissions based on preprocessed features.
+
+Example Usage:
+--------------
+```python
+# Step 1: Load, clean, and preprocess the dataset
+df_cleaned = load_and_clean_data()
+
+# Step 2: One-hot encode categorical features and standardize numerical features
+X, y = prepare_data_for_modeling(df_cleaned)
+
+# Step 3: Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Initialize and train a neural network using PyTorch
+model = SimpleNN(input_size=X_train.shape[1], hidden_size=64, output_size=3).to(device)
+train_model(model, X_train, y_train, X_test, y_test)
+
+# Step 5: Evaluate the model on the test set
+test_accuracy = evaluate_model(model, X_test, y_test)
+print(f"Test Accuracy: {test_accuracy:.2f}%")
+"""
+
 # Standard library imports
 from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
