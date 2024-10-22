@@ -1,33 +1,25 @@
 """
 data_frame_column_cleaner.py
 
-This module provides a utility class for cleaning Pandas DataFrame columns by removing commas from numeric values, stripping whitespace, and converting values to numeric types. The `DataFrameColumnCleaner` class allows users to apply these operations with customizable settings at the column or global level.
+This module provides functions for cleaning and managing DataFrame column names. It standardizes column names, sanitizes
+text, and allows the user to drop unnecessary columns. It is useful in preprocessing stages.
 
-Main Class:
-- DataFrameColumnCleaner: A class to clean columns by removing commas, stripping whitespace, and converting values to numeric types.
+Functions:
+    - clean_column_names(df: pd.DataFrame): Standardizes and cleans the column names in a DataFrame.
+    - drop_columns(df: pd.DataFrame, columns: List[str]): Drops specified columns from the DataFrame.
 
 Example Usage:
---------------
-```python
-import pandas as pd
-from data_frame_column_cleaner import DataFrameColumnCleaner
+    # Clean and standardize column names:
+    cleaned_df = clean_column_names(df)
+    
+    # Drop unwanted columns:
+    df_cleaned = drop_columns(df, ['unnecessary_column1', 'unnecessary_column2'])
+    
+    # Example Output:
+    print(cleaned_df.columns)  # ['clean_name1', 'clean_name2', ...]
 
-# Sample DataFrame with mixed data types and formatting issues
-data = {
-    "Column1": [" 1,000 ", " 2,500 ", "3,000", "invalid"],
-    "Column2": [" 4.5", " 5.75", "6.25", " 7.0 "],
-    "Column3": ["apple", "banana", "cherry", "apple"],
-}
-df = pd.DataFrame(data)
-
-# Initialize the DataFrameColumnCleaner
-cleaner = DataFrameColumnCleaner(strip_whitespace=True, to_numeric_errors="coerce")
-
-# Process the DataFrame with global defaults
-cleaned_df = cleaner.process_dataframe(df)
-
-# View the cleaned DataFrame
-print(cleaned_df)
+Requirements:
+    pandas
 """
 
 import pandas as pd

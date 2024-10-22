@@ -1,0 +1,42 @@
+# %%
+import os
+
+
+# %%
+# Function to convert .py files to .txt files
+def batch_py2txt(directory):
+    # Create a folder called 'txt' if it doesn't exist
+    txt_folder = os.path.join(directory, "txt")
+    if not os.path.exists(txt_folder):
+        os.makedirs(txt_folder)
+
+    # Loop over all files in the current directory
+    for file_name in os.listdir(directory):
+        # Only process files, not folders
+        if os.path.isfile(
+            os.path.join(directory, file_name)
+        ) and file_name.endswith(".py"):
+            # Define the input and output file paths
+            py_file_path = os.path.join(directory, file_name)
+            txt_file_name = file_name.replace(".py", ".txt")
+            txt_file_path = os.path.join(txt_folder, txt_file_name)
+
+            # Read content from the .py file and write to the .txt file
+            with open(py_file_path, "r", encoding="utf-8") as py_file:
+                content = py_file.read()
+
+            with open(txt_file_path, "w", encoding="utf-8") as txt_file:
+                txt_file.write(content)
+
+            print(
+                f"Converted {file_name} to {txt_file_name} and saved in 'txt' folder."
+            )
+
+
+# %%
+# Execution starts here
+if __name__ == "__main__":
+    # Get the current directory where the script is executed
+    current_directory = os.getcwd()
+    batch_py2txt(current_directory)
+# %%

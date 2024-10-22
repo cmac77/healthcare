@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.testing.unittestEnabled": true,
+		"python.testing.unittestArgs": [
+			"-v",
+			"-s",
+			"C:/Users/cmac7/Documents/python/cjmac/healthcare/tests/synthetic_multivar_data",
+			"-p",
+			"test_*.py"
+		],
+		"python.envFile": "${workspaceFolder}/.env",
+		"python.testing.cwd": "C:/Users/cmac7/Documents/python/cjmac/healthcare",
+		"terminal.integrated.env.windows": {
+			"PYTHONPATH": "C:/Users/cmac7/Documents/python/cjmac/healthcare/src"
+		},
+		"python.analysis.extraPaths": [
+			"${workspaceFolder}/src"
+		],
+		"python.autoComplete.extraPaths": [
+			"${workspaceFolder}/src"
+		]
+	}
+}

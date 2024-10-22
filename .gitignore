@@ -1,1 +1,9 @@
-*.egg-info
+*.egg-info                # Ignores any .egg-info files
+__pycache__/              # Ignores the __pycache__ directory and its contents
+*.pyc                     # Ignores any compiled Python files with a .pyc extension
+
+# Ignore the Kaggle folder in data
+data/kaggle/              # Ignores the Kaggle folder and its contents in the data directory
+
+# Ignore the Kaggle folder in scripts
+scripts/kaggle/           # Ignores the Kaggle folder and its contents in the scripts directory

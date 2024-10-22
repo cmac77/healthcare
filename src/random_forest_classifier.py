@@ -1,3 +1,29 @@
+"""
+random_forest_classifier.py
+
+This module implements a Random Forest classifier using the XGBoost library for synthetic data classification tasks.
+It includes functions for training the classifier, evaluating model performance, and explaining model decisions using
+SHAP values for feature importance.
+
+Functions:
+    - train_model(X_train: np.ndarray, y_train: np.ndarray): Trains an XGBoost Random Forest classifier on the training data.
+    - evaluate_model(model, X_test: np.ndarray, y_test: np.ndarray): Evaluates the model and returns performance metrics.
+    - explain_model(model, X_test: np.ndarray): Uses SHAP values to explain the predictions made by the trained model.
+
+Example Usage:
+    # Train the model:
+    model = train_model(X_train, y_train)
+    
+    # Evaluate model performance:
+    accuracy = evaluate_model(model, X_test, y_test)
+    
+    # Explain model predictions:
+    explain_model(model, X_test)
+
+Requirements:
+    xgboost, shap, pandas, numpy, scikit-learn
+"""
+
 # %%
 import shap
 import xgboost as xgb
