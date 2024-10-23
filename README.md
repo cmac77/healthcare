@@ -65,9 +65,12 @@ healthcare/
 - **Categorical Features**: Handles the generation of categorical data features, including custom distributions and hierarchical feature levels.
 - **Numerical Features**: Generates structured numerical data with options for clustering and distances between centroids.
 - **Correlation Features**: Adds correlations between synthetic features, with support for both numerical and categorical data.
+- **data_frame_column_cleaner**: A utility for cleaning DataFrame columns.
+- **data_frame_column_editor**: A Tkinter-based UI for editing DataFrame columns.
 - **Random Forest Classifier**: A script implementing a Random Forest classifier using XGBoost, with SHAP-based explanations.
 - **Partial Least Squares Regression**: Implements PLS regression for dimensionality reduction and modeling on synthetic datasets.
-- **DataFrame Utilities**: Helper modules for cleaning and editing pandas DataFrames.
+
+
 
 ### 4. Tests
 - **Unit Tests**: Located in the `tests/synthetic_multivar_data` directory, these ensure that the synthetic data generation modules function as expected, covering the main components like categorical, numerical, and correlated feature generation.
@@ -76,13 +79,13 @@ healthcare/
 
 ### Clone the repository:
 ```plaintext
-git clone https://github.com/your-repo/healthcare.git
+git clone https://github.com/cmac77/healthcare.git
 cd healthcare
 ```
 
 ## Installation & Usage
 ```plaintext
-git clone https://github.com/your-repo/healthcare.git
+git clone https://github.com/cmac77/healthcare.git
 cd healthcare
 ```
 Install the required packages:
